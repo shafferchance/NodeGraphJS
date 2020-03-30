@@ -1,0 +1,85 @@
+body {
+    width: 80vw;
+    height: 80vh;
+}
+
+.add {
+    width: 1em;  
+}
+
+.box {
+    background: lightblue;
+    min-width: 150px;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    border: 2px dotted burlywood;
+}
+
+.container {
+    width: 150px;
+    height: 150px;
+    border: dashed burlywood;
+    padding: 5px;
+}
+
+.input {
+    align-self: center;
+    display: flex;
+}
+
+.input input {
+    width: 100%;
+    outline: none;
+    border: none;
+    background: none;
+    margin: 0 1px 0 1px;
+}
+
+.input input:focus {
+    border: 1px solid rgba(81, 203, 238, 1);
+    box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+}
+
+.label {
+    max-width: 50px;   
+}
+
+.label-input {
+    display: flex;
+    align-self: center;
+    max-width: 50px;
+    outline: none;
+    border: none;
+    background: none;
+    margin: 0 1px 0 1px;
+}
+
+.label-input input:focus {
+    border: 1px solid rgba(81, 203, 238, 1);
+    box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+}
+
+.line {
+    color: black;
+    background-color: black;
+    height: 1px;
+}
+
+.node, .nodeI, .nodeO {
+    width: 1em;
+}
+
+.node:hover, .nodeI:hover, .nodeO:hover {
+    text-shadow: black 0px 1px 0em;
+    color: chartreuse;
+}
+
+.toolbar {
+    display: flex;
+}
+
+svg {
+    border: dashed burlywood;
+    padding: 5px;
+}
