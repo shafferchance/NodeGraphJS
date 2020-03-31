@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "declaration": true,
+        "declarationDir": "./js",
+        "module": "es6",
+        "noImplicitAny": true,
+        "outDir": "./built",
+        "target": "es5"
+    },
+    "include": [
+        "./js/*.ts"
+    ],
+    "exclude": ["node_modules"]
+}

@@ -9,6 +9,7 @@ Was created as an experiment that was to prove that we could make our own node-g
 - [ ] Tie into System Dynamics basic calculations
 - [ ] Add attributes on to connection for mutation by rate
 - [ ] Ensure compatibility and performance remain key pieces
+- [ ] Convert to typescript as exercise
 
 ## Contact
 Email: [shafferchance@gmail.com](mailto:shafferchance@gmail.com?subject=Node%20Grpah%20Inquiry) 
