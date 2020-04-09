@@ -1,5 +1,6 @@
 import ComponentE from '../lib/Component-Event.js';
 import SimPiece from './SimPiece-Event.js';
+import RenderLayer from './RenderLayer.js';
 
 export default class Toolbar extends ComponentE {
     constructor(dest, props= {}) {
@@ -17,9 +18,10 @@ export default class Toolbar extends ComponentE {
     }
 
     render() {
+        const renderLayer = new RenderLayer(document.body);
         const div = document.createElement('div');
         if (this.classList !== undefined) {
-            div.classList = this.classList;
+            div.classList.add(this.classList);
         } else {
             div.className = this.className;
         }
@@ -66,6 +68,7 @@ export default class Toolbar extends ComponentE {
                 console.log(conns);
             }));
         this.element.appendChild(div);
+        renderLayer.render();
     }
 }
 

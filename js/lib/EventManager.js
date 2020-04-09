@@ -36,8 +36,9 @@ class EventManager {
         this.state = {};
         this.status = STATUS.RESTING;
         this.state = new Proxy((params.state || {}), {
-            set: function (state, key, value) {
+            set: (state, key, value) => {
                 state[key] = value; // Verifying valid params passed
+                console.log(this);
                 this.events.publish('stateChange', this.state)
                 if (this.status !== STATUS.MUTATION) {
                     console.warn(`You should use a mutation to set ${key}`);
@@ -53,10 +54,10 @@ class EventManager {
             console.error(`Action "${actionKey}" doesn't exist`);
             return false;
         }
-        debug ? console.groupCollapsed(`ACTION: ${actionKey}`) : '';
+        console.groupCollapsed(`ACTION: ${actionKey}`);
         this.status = STATUS.ACTION;
         this.actions[actionKey](this, payload);
-        debug ? console.groupEnd() : '';
+        console.groupEnd(`ACTION: ${actionKey}`);
         return true;
     }
 
@@ -76,12 +77,20 @@ class EventManager {
 export default new EventManager({
     debug: true,
     state: {
+        context2D: {},
         startPoint: '',
         currentLoc: '',
         simRunning: false,
+        renderLayerDimm: {},
         result: 0,
     },
     actions: {
+        changeRenderLayerDimm(context, payload) {
+            context.commit('changeRenderLayerDimm', payload);
+        },
+        change2DContext(context, payload) {
+            context.commit('change2DContext', payload);
+        },
         changeCurrentLoc(context, payload) {
             context.commit('changeCurrentLoc', payload);
         },
@@ -96,6 +105,14 @@ export default new EventManager({
         },
     },
     mutations: {
+        changeRenderLayerDimm(state, payload) {
+            state.renderLayerDimm = payload;
+            return state;
+        },
+        change2DContext(state, payload) {
+            state.context2D = payload;
+            return state;
+        },
         changeResult(state, payload) {
             state.result = payload;
             return state;

@@ -8,6 +8,7 @@ export default class ComponentE {
                             console.error("Parent element missing!");
         this.id = props['id'] !== undefined ? props['id'] : this.idGen();
         this.observer = EventManager.events; // Gives access to PubSub
+        this.store = EventManager; // Gives access to store
         this.render = this.render || function () {};
         this.reRender = false;
         this.observer.subscribe('stateChange', () => {
@@ -29,7 +30,5 @@ export default class ComponentE {
 
     idGen() {
         return '_' + Math.random().toString(12).substring(2,9);
-    }
-
-    
+    }    
 }

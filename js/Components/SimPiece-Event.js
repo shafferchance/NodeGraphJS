@@ -198,29 +198,29 @@ export default class SimPiece extends ComponentE {
                     }
                     break;
                 case 'nodeO':
-                    const drawLine = draw => {
-                        const srcX = startPointRect.left - startPointRect.width / 2;
-                        const srcY = startPointRect.top - startPointRect.height / 2;
+                    // const drawLine = draw => {
+                    //     const srcX = startPointRect.left - startPointRect.width / 2;
+                    //     const srcY = startPointRect.top - startPointRect.height / 2;
 
-                        const length = Math.sqrt(
-                            (draw.clientX - srcX < 0 ?
-                                srcX - draw.clientX : draw.clientX - srcX) ** 2 +
-                            (draw.clientY - srcY < 0 ?
-                                srcY - draw.clientY : draw.clientY - srcY) ** 2);
+                    //     const length = Math.sqrt(
+                    //         (draw.clientX - srcX < 0 ?
+                    //             srcX - draw.clientX : draw.clientX - srcX) ** 2 +
+                    //         (draw.clientY - srcY < 0 ?
+                    //             srcY - draw.clientY : draw.clientY - srcY) ** 2);
                         
-                        const angle = Math.atan2(
-                            (draw.clientY - srcY),
-                            (draw.clientX - srcX))
-                            * (180/Math.PI);
+                    //     const angle = Math.atan2(
+                    //         (draw.clientY - srcY),
+                    //         (draw.clientX - srcX))
+                    //         * (180/Math.PI);
 
-                        line.style.top = '9px';
-                        line.style.left = '235px';
-                        line.style.width = `${length}px`;
-                        line.style.transform = `rotate(${angle}deg)`;
-                        line.style.webkitTransform =
-                                            `rotate(${angle}deg)`;
-                        line.style.transformOrigin = `top left`;
-                    }
+                    //     line.style.top = '9px';
+                    //     line.style.left = '235px';
+                    //     line.style.width = `${length}px`;
+                    //     line.style.transform = `rotate(${angle}deg)`;
+                    //     line.style.webkitTransform =
+                    //                         `rotate(${angle}deg)`;
+                    //     line.style.transformOrigin = `top left`;
+                    // }
 
                     const updateInfo = e => {
                         document.removeEventListener('mousemove', updateLine);
@@ -240,13 +240,37 @@ export default class SimPiece extends ComponentE {
                                     id: box.id,
                                 data: `${box.id}-type-idx-0`});
                         } else {
-                            startPoint.removeChild(line);
+                            //startPoint.removeChild(line);
                         }
                     }
 
                     const updateLine = e => {
                         e.preventDefault();
-                        drawLine(e);
+                        //drawLine(e);
+                        let [x2, y2] = [e.clientX - rect.left, e.clientY - rect.top - 20];
+                        // context.bezierCurveTo(
+                        //     old.lx1, old.ly1,
+                        //     old.lx2, old.ly2,
+                        //     old.lx3, old.ly3
+                        // );
+                        // context.fillStyle="white";
+                        // context.stroke();
+
+                        context.clearRect(0,0,canvas.width,canvas.height);
+                        context.beginPath();
+                        context.moveTo(x,y);
+                        context.bezierCurveTo(
+                            x + 75, 
+                            y,
+                            x2 - 75,
+                            y2,
+                            x2,
+                            y2);
+                        context.stroke();
+                        // old.bezierCurveTo(
+                        //     x + 50, y,
+                        //     x2 - 50, y2,
+                        //     x2, y2);
                     }
                     /* 
                         The variable placement should not matter as the 
@@ -256,14 +280,21 @@ export default class SimPiece extends ComponentE {
                         to the top of the scope due to the "hijacking" nature
                         of the `let` declaration. 
                     */ 
+                    let context = this.store.state.context2D;
+                    let rect = this.store.state.renderLayerDimm;
+                    // May change this out later to use one in global state
+                    let canvas = document.querySelector("canvas");
+                    console.log(context);
+                    console.log(e);
+                    let [x, y] = [e.clientX - rect.left, e.pageY - rect.top - 20];
                     console.log("Node clicked");
+                    console.log(rect);
                     e.preventDefault();
-                    const startPoint = e.target;
-                    const startPointRect = startPoint.getBoundingClientRect();
-                    const line = document.createElement('div');
-                    line.className = 'line';
-                    line.style.position = 'absolute';
-                    e.target.appendChild(line);
+                    console.log(`X: ${x}, Y:${y}`);
+                    // const line = document.createElement('div');
+                    // line.className = 'line';
+                    // line.style.position = 'absolute';
+                    // e.target.appendChild(line);
                     document.addEventListener('mousemove', updateLine);
                     document.addEventListener('mouseup', updateInfo);
                     break;

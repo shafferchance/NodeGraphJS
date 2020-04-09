@@ -117,8 +117,4 @@ class SDSim {
             // Ensure that ids have been loaded into PubSub
         });
     }
-
-    async run() {
-        // Start execution from set start point
-    }
 }
