@@ -28,48 +28,52 @@ export default class SimPiece extends ComponentE {
         }
     }
 
-    async requestOutput(reqObjId) {
-        console.log(reqObjId);
-        let ids = this.conns;
-        if (reqObjId !== this.id && reqObjId) {
-            ids = await this.requestConns(reqObjId);
-        }
-        console.log(ids);
-        const waitRes = await this.waitForInput(Array.isArray(ids) ? ids : ids.result);
-        console.log(waitRes);
-        if (Array.isArray(waitRes)) {
-            let preReq = [];
-            let result = [];
-            for (const entry of waitRes) {
-                if (this.props.limit <= 10) {
-                    //preReq.push(this.requestOutput(entry.id));
-                    console.log(entry);
-                    preReq.push(this.requestOutput(entry));
+    requestOutput(reqObjId) {
+        return new Promise((res, rej) => {
+                console.log(reqObjId);
+            let ids = this.conns;
+            if (reqObjId !== this.id && reqObjId) {
+                ids = this.requestConns(reqObjId);
+            }
+            ids
+            .then(results => this.waitForInput(Array.isArray(results) ? ids : ids.result))
+            .then(waitRes => {
+                if (Array.isArray(waitRes)) {
+                    let preReq = [];
+                    let result = [];
+                    for (const entry of waitRes) {
+                        if (this.props.limit <= 10) {
+                            //preReq.push(this.requestOutput(entry.id));
+                            console.log(entry);
+                            preReq.push(this.requestOutput(entry));
+                        }
+                    }
+                    this.props.limit++;
+                    // Where the recursive magic happens!
+                    Promise.all(preReq)
+                           .then(allRes => {
+                                if (result === []) {
+                                    result.concat(allRes);
+                                } else if (allRes === result) {
+                                    res(result);
+                                }
+                                //console.log(results);
+                                res(output);
+                                //console.log(results);
+                           });
+                } else if (waitRes === true) {
+                    const response = this.observer.response(
+                        'requestOutput',
+                        reqObjId === undefined ? this.id : reqObjId,
+                        {srcId: this.id, id: reqObjId === undefined ? this.id : reqObjId});
+                    res(response !== null ? response : `Object with ${id} not found`);    
+                } else {
+                    rej(`error with ${reqObjId === undefined ? this.id : reqObjId}`); 
+                    // There was an error so the message will be passed
+                    // back down the chain to the original call
                 }
-            }
-            this.props.limit++;
-            // Where the recursive magic happens!
-            const output = await Promise.all(preReq);
-            console.log(output);
-            if (result === []) {
-                result.concat(output);
-            } else if (output === result) {
-                return result;
-            }
-            //console.log(results);
-            return output;
-            //console.log(results);
-        } else if (waitRes === true) {
-            const response = this.observer.response(
-                'requestOutput',
-                reqObjId === undefined ? this.id : reqObjId,
-                {srcId: this.id, id: reqObjId === undefined ? this.id : reqObjId});
-            return response !== null ? response : `Object with ${id} not found`;    
-        } else {
-            return `error with ${reqObjId === undefined ? this.id : reqObjId}`; 
-            // There was an error so the message will be passed
-            // back down the chain to the original call
-        }
+            });
+        });
     }
 
     requestConns(reqObjId) {
