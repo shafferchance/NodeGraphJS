@@ -77,6 +77,7 @@ class EventManager {
 export default new EventManager({
     debug: true,
     state: {
+        conns: {},
         context2D: {},
         startPoint: '',
         currentLoc: '',
@@ -103,6 +104,9 @@ export default new EventManager({
         changeStartPoint(context, payload) {
             context.commit('changeStart', payload);
         },
+        mutateConnection(context, payload) {
+            context.commit('mutateConnection', payload);
+        }
     },
     mutations: {
         changeRenderLayerDimm(state, payload) {
@@ -125,5 +129,12 @@ export default new EventManager({
             state.startPoint = payload;
             return state;
         },
+        mutateConnection(state, payload) {
+            if (state.conns[payload.box] === undefined) {
+                state.conns[payload.box] = [];
+            }
+            state[payload.box].push(payload.connObj);
+            return state;
+        }
     }
 })

@@ -9,6 +9,7 @@ export default class SimPiece extends ComponentE {
         this.conns = props['conns'] !== undefined ? props['conns'] : [];
         this.props = props;
         this.props["limit"] = 0;
+        this.renderRect = this.store.renderLayerDimm;
         this.subscribe();
     }
 
@@ -173,12 +174,17 @@ export default class SimPiece extends ComponentE {
         box.appendChild(add);
 
         function moveAt(x, y) {
+            // May convert to regex replace
             box.style.left = x - box.offsetWidth / 2 + 'px';
             box.style.top = y - box.offsetHeight / 2 + 'px';
         }
 
         function onMove(e) {
-            moveAt(e.pageX, e.pageY);
+            let rect = this.state.renderLayerDimm;
+            moveAt(e.clientX, e.clientY);
+            for (const ele of this.state.conns[box.id]) {
+                ele
+            }
         }
 
         box.addEventListener('mousedown', e => {
@@ -239,15 +245,22 @@ export default class SimPiece extends ComponentE {
                                 {srcId: e.target.offsetParent.id,
                                     id: box.id,
                                 data: `${box.id}-type-idx-0`});
+                            this.store.dispatch("mutateConnection", {
+                                box: box.id,
+                                connObj: line
+                            });
                         } else {
-                            //startPoint.removeChild(line);
+                            svg.removeChild(line);
                         }
                     }
 
                     const updateLine = e => {
                         e.preventDefault();
                         //drawLine(e);
-                        let [x2, y2] = [e.clientX - rect.left, e.clientY - rect.top - 20];
+                        let [x2, y2] = [e.clientX - this.renderRect.left, e.clientY - this.renderRect.top - 20];
+                        let pathString = `M ${x} ${y} C ${x + 75} ${y} ${x2 - 75} ${y2} ${x2} ${y2}`;
+
+                        line.setAttribute("d", pathString);
                         // context.bezierCurveTo(
                         //     old.lx1, old.ly1,
                         //     old.lx2, old.ly2,
@@ -256,17 +269,17 @@ export default class SimPiece extends ComponentE {
                         // context.fillStyle="white";
                         // context.stroke();
 
-                        context.clearRect(0,0,canvas.width,canvas.height);
-                        context.beginPath();
-                        context.moveTo(x,y);
-                        context.bezierCurveTo(
-                            x + 75, 
-                            y,
-                            x2 - 75,
-                            y2,
-                            x2,
-                            y2);
-                        context.stroke();
+                        // context.clearRect(0,0,canvas.width,canvas.height);
+                        // context.beginPath();
+                        // context.moveTo(x,y);
+                        // context.bezierCurveTo(
+                        //     x + 75, 
+                        //     y,
+                        //     x2 - 75,
+                        //     y2,
+                        //     x2,
+                        //     y2);
+                        // context.stroke();
                         // old.bezierCurveTo(
                         //     x + 50, y,
                         //     x2 - 50, y2,
@@ -280,21 +293,22 @@ export default class SimPiece extends ComponentE {
                         to the top of the scope due to the "hijacking" nature
                         of the `let` declaration. 
                     */ 
-                    let context = this.store.state.context2D;
-                    let rect = this.store.state.renderLayerDimm;
+                    // let context = this.store.state.context2D;
                     // May change this out later to use one in global state
-                    let canvas = document.querySelector("canvas");
-                    console.log(context);
+                    // let canvas = document.querySelector("canvas");
+                    let svg = document.querySelector("svg");
+                    
+                    // console.log(context);
                     console.log(e);
-                    let [x, y] = [e.clientX - rect.left, e.pageY - rect.top - 20];
+
+                    let [x, y] = [e.clientX - this.renderRect.left, e.pageY - this.renderRect.top - 20];
                     console.log("Node clicked");
-                    console.log(rect);
                     e.preventDefault();
                     console.log(`X: ${x}, Y:${y}`);
-                    // const line = document.createElement('div');
-                    // line.className = 'line';
-                    // line.style.position = 'absolute';
-                    // e.target.appendChild(line);
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    line.setAttribute("stroke","black");
+                    line.setAttribute("fill","transparent");
+                    svg.appendChild(line);
                     document.addEventListener('mousemove', updateLine);
                     document.addEventListener('mouseup', updateInfo);
                     break;
@@ -312,6 +326,12 @@ export default class SimPiece extends ComponentE {
         this.element.appendChild(box);
     }
     
+}
+
+function BezierPath(x1, y1, cx1, cy1, cx2, cy2, x2, y2) {
+    this.x1 = x1; this.y1 = y1;
+    this.cx1 = cx1; this.cy1 = cy1;
+    this.cx2 = cx2; this.cy2 = cy2;
 }
 
 function getAttribEle(parent='') {
