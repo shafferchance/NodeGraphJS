@@ -9,7 +9,7 @@ export default class SimPiece extends ComponentE {
         this.conns = props['conns'] !== undefined ? props['conns'] : [];
         this.props = props;
         this.props["limit"] = 0;
-        this.renderRect = this.store.renderLayerDimm;
+        this.renderRect = this.store.state.renderLayerDimm;
         this.subscribe();
     }
 
@@ -180,11 +180,11 @@ export default class SimPiece extends ComponentE {
         }
 
         function onMove(e) {
-            let rect = this.state.renderLayerDimm;
+            // let rect = this.store.state.renderLayerDimm;
             moveAt(e.clientX, e.clientY);
-            for (const ele of this.state.conns[box.id]) {
-                ele
-            }
+            // for (const ele of this.state.conns[box.id]) {
+            //     ele
+            // }
         }
 
         box.addEventListener('mousedown', e => {
@@ -258,9 +258,14 @@ export default class SimPiece extends ComponentE {
                         e.preventDefault();
                         //drawLine(e);
                         let [x2, y2] = [e.clientX - this.renderRect.left, e.clientY - this.renderRect.top - 20];
-                        let pathString = `M ${x} ${y} C ${x + 75} ${y} ${x2 - 75} ${y2} ${x2} ${y2}`;
+                        line.movePath({
+                            x1: x, y1: y,
+                            cx1: x + 75, cy1: y,
+                            cx2: x2 - 75, cy2: y2,
+                            x2: x2, y2: y2});
+                        //let pathString = `M ${x} ${y} C ${x + 75} ${y} ${x2 - 75} ${y2} ${x2} ${y2}`;
 
-                        line.setAttribute("d", pathString);
+                        //line.setAttribute("d", pathString);
                         // context.bezierCurveTo(
                         //     old.lx1, old.ly1,
                         //     old.lx2, old.ly2,
@@ -305,10 +310,8 @@ export default class SimPiece extends ComponentE {
                     console.log("Node clicked");
                     e.preventDefault();
                     console.log(`X: ${x}, Y:${y}`);
-                    const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    line.setAttribute("stroke","black");
-                    line.setAttribute("fill","transparent");
-                    svg.appendChild(line);
+                    const line = new BezierPath();
+                    svg.appendChild(line.path);
                     document.addEventListener('mousemove', updateLine);
                     document.addEventListener('mouseup', updateInfo);
                     break;
@@ -332,7 +335,28 @@ function BezierPath(x1, y1, cx1, cy1, cx2, cy2, x2, y2) {
     this.x1 = x1; this.y1 = y1;
     this.cx1 = cx1; this.cy1 = cy1;
     this.cx2 = cx2; this.cy2 = cy2;
+    this.x2 = x2; this.y2 = y2;
+
+    this.pathString = `M ${x1} ${y1} C ${cx1} ${cy1} ${cx2} ${cy2} ${x2} ${y2}`;
+    this.path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    this.path.setAttribute("stroke", "black");
+    this.path.setAttribute("fill","transparent");
+    this.path.setAttribute("d", this.pathString);
+
+    return this;
 }
+
+BezierPath.prototype.movePath = function (newVals) {
+    for(const ele of Object.keys(newVals)) {
+        if (this.hasOwnProperty(ele) === false) {continue;}
+        this[ele] = newVals[ele];
+    }
+
+    this.pathString = `M ${this.x1} ${this.y1} C ${this.cx1} ${this.cy1} ${this.cx2} ${this.cy2} ${this.x2} ${this.y2}`;
+    this.path.setAttribute("d",this.pathString);
+    return this.path;
+}
+
 
 function getAttribEle(parent='') {
     const ele = document.createElement("div");
