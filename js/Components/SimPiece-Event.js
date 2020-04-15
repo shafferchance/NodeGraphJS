@@ -22,7 +22,7 @@ export default class SimPiece extends ComponentE {
 
     nextElement() {
         for (const conn in this.conns) {
-            const split = conn.split('-');
+            const split = conn.connStr.split('-');
             if (split[2] === 1 && split[1].match(/sink.|stock|flow./g)) {
                 return split[0];
             }
@@ -32,7 +32,7 @@ export default class SimPiece extends ComponentE {
     requestOutput(reqObjId) {
         return new Promise((res, rej) => {
                 console.log(reqObjId);
-            let ids = this.conns;
+            let ids = this.conns.filter(ele => ele.connStr);
             if (reqObjId !== this.id && reqObjId) {
                 ids = this.requestConns(reqObjId);
             }
@@ -113,18 +113,24 @@ export default class SimPiece extends ComponentE {
                     `${request.id}-\w+-${request.delete}-.`);
                 this.conns.splice(
                     this.conns.findIndex(
-                        x => x.match(regEx)), 1);
+                        x => x.connStr.match(regEx)), 1);
                 request['result'] = this.conns;
                 return request;
             }
-            request.data = request.data.replace(
+            request.data.connStr = request.data.connStr.replace(
                 'type',
                 this.props.type);
-            request.data = request.data.replace(
+            request.data.connStr = request.data.connStr.replace(
                 'idx', 
                 this.index.next().value);
             this.conns.push(request.data);
+            this.store.commit("mutateConnection", {
+                type: request.data.connStr[request.data.connStr.length - 1] === "1" ? "output" : "input",
+                box: this.id,
+                connObj: request.data.connObj
+            });
             request['result'] = this.conns;
+            // console.log(request);
             return request;
         });
     }
@@ -179,12 +185,66 @@ export default class SimPiece extends ComponentE {
             box.style.top = y - box.offsetHeight / 2 + 'px';
         }
 
-        function onMove(e) {
-            // let rect = this.store.state.renderLayerDimm;
+        function moveConns(conns, io, x, y) {
+            // console.log(conns);
+            // console.log(x);
+            // console.log(io);
+            for (const ele of conns) {
+                // console.log(ele);
+                // const old = ele.pathString.split(" ").map(ele => Number(ele));
+                // let [newX, newY] = [
+                //     (ele.x1 - x) < 0 ? -1*(ele.x1 - x) : (ele.x1 - x),
+                //      (ele.y1 - y) < 0 ? -1*(ele.y1 - y) : (ele.y1 - y)];
+                // console.log(newX, newY);
+                if (io === 1) {
+                    ele.movePath({
+                        x1: x, y1: y
+                    });
+                    // console.log(ele);
+                    // ele.x1 = ele.x1 + newX; ele.y1 = ele.y1 + newY;
+                    // ele.cx1 = ele.cx1 + newX; ele.cy1 = ele.cy1 + newY;
+                    // ele.cx2 = ele.cx2 + newX;
+                    continue;
+                }
+                ele.movePath({
+                    x2: x, y2: y
+                });
+                // console.log(ele.pathString);
+                // ele.x2 = ele.x2 + newX; ele.y2 = ele.y2 + newY;
+                // ele.cx2 = ele.cx2 + newX; ele.cy2 = ele.cy2 + newY;
+                // ele.cx1 = ele.cx1 + newX;
+            }
+        }
+
+        const onMove = e => {   
+            // console.log(e);
+            // let canvas = document.querySelector("canvas");
+            let conns = this.store.state.conns[box.id];
+            // this.store.state.context2D.clearRect(0, 0, canvas.width, canvas.height);
             moveAt(e.clientX, e.clientY);
-            // for (const ele of this.state.conns[box.id]) {
-            //     ele
-            // }
+            if (conns !== undefined) {
+                // console.log(conns)
+                for (const ele in conns) {
+                    if (conns[ele].length > 0) {
+                        // console.log(ele);
+                        moveConns(
+                            conns[ele],
+                            ele === "input" ? 0 : 1,
+                            e.clientX, 
+                            e.clientY);
+                        // this.store.state.context2D.beginPath();
+                        // this.store.state.context2D.moveTo(conns[ele].x1,conns[ele].y1);
+                        // this.store.state.context2D.bezierCurveTo(
+                        //     conns[ele].cx1, 
+                        //     conns[ele].cy1,
+                        //     conns[ele].cx2,
+                        //     conns[ele].cy2,
+                        //     conns[ele].x2,
+                        //     conns[ele].y2);
+                        // this.store.state.context2D.context.stroke();
+                    }
+                }
+            }
         }
 
         box.addEventListener('mousedown', e => {
@@ -237,20 +297,26 @@ export default class SimPiece extends ComponentE {
                                 box.id,
                                 {srcId: box.id, 
                                     id: e.target.offsetParent.id,
-                                data: `${e.target
-                                          .offsetParent.id}-type-idx-1`});
+                                data: {
+                                    connStr: `${e.target
+                                          .offsetParent.id}-type-idx-1`,
+                                    connObj: line
+                                }});
                             this.observer.response(
                                 'updateConns',
                                 e.target.offsetParent.id,
                                 {srcId: e.target.offsetParent.id,
                                     id: box.id,
-                                data: `${box.id}-type-idx-0`});
-                            this.store.dispatch("mutateConnection", {
-                                box: box.id,
-                                connObj: line
-                            });
+                                data: {
+                                    connStr: `${box.id}-type-idx-0`,
+                                    connObj: line
+                                }});
                         } else {
-                            svg.removeChild(line);
+                            // this.store.state.context2D.fillStyle = "white";
+                            // this.store.state.context2D.bezierCurveTo(
+                            //     old.cx1, old.cy1, old.cx2, old.cy2, old.x2, old.y2);
+                            // this.store.state.context2D.stroke();
+                            svg.removeChild(line.path);
                         }
                     }
 
@@ -263,9 +329,8 @@ export default class SimPiece extends ComponentE {
                             cx1: x + 75, cy1: y,
                             cx2: x2 - 75, cy2: y2,
                             x2: x2, y2: y2});
-                        //let pathString = `M ${x} ${y} C ${x + 75} ${y} ${x2 - 75} ${y2} ${x2} ${y2}`;
-
-                        //line.setAttribute("d", pathString);
+                        // let pathString = `M ${x} ${y} C ${x + 75} ${y} ${x2 - 75} ${y2} ${x2} ${y2}`;
+                        // line.setAttribute("d", pathString);
                         // context.bezierCurveTo(
                         //     old.lx1, old.ly1,
                         //     old.lx2, old.ly2,
@@ -273,9 +338,15 @@ export default class SimPiece extends ComponentE {
                         // );
                         // context.fillStyle="white";
                         // context.stroke();
-
-                        // context.clearRect(0,0,canvas.width,canvas.height);
                         // context.beginPath();
+                        // context.moveTo(x,y);
+                        // context.bezierCurveTo(
+                        //     old.cx1, old.cy1, old.cx2, old.cy2, old.x2, old.y2);
+                        // context.strokeStyle = "white";
+                        // context.fillStyle = "white";
+                        // context.stroke();
+                        // context.beginPath();
+                        // context.strokeStyle = "black";
                         // context.moveTo(x,y);
                         // context.bezierCurveTo(
                         //     x + 75, 
@@ -285,10 +356,11 @@ export default class SimPiece extends ComponentE {
                         //     x2,
                         //     y2);
                         // context.stroke();
-                        // old.bezierCurveTo(
-                        //     x + 50, y,
-                        //     x2 - 50, y2,
-                        //     x2, y2);
+                        // old.cx1 = x + 75; old.cy1 = y; old.cx2 = x2 -75; old.cy2 = y2;
+                        // old.x2 = x2; old.y2 = y2;
+                            // x + 50, y,
+                            // x2 - 50, y2,
+                            // x2, y2);
                     }
                     /* 
                         The variable placement should not matter as the 
@@ -300,13 +372,17 @@ export default class SimPiece extends ComponentE {
                     */ 
                     // let context = this.store.state.context2D;
                     // May change this out later to use one in global state
-                    // let canvas = document.querySelector("canvas");
+                    let [x, y] = [e.clientX - this.renderRect.left, e.pageY - this.renderRect.top - 20];
+                    // let context = this.store.state.context2D;
+                    // let old = {
+                    //     x1: x, y1: y, cx1: 0, cy1: 0, cx2: 0, cy2: 0, x2: 0, y2: 0
+                    // }
                     let svg = document.querySelector("svg");
                     
                     // console.log(context);
                     console.log(e);
 
-                    let [x, y] = [e.clientX - this.renderRect.left, e.pageY - this.renderRect.top - 20];
+                    
                     console.log("Node clicked");
                     e.preventDefault();
                     console.log(`X: ${x}, Y:${y}`);
@@ -347,7 +423,9 @@ function BezierPath(x1, y1, cx1, cy1, cx2, cy2, x2, y2) {
 }
 
 BezierPath.prototype.movePath = function (newVals) {
+    // console.log(newVals);
     for(const ele of Object.keys(newVals)) {
+        // console.log(this[ele], ele);
         if (this.hasOwnProperty(ele) === false) {continue;}
         this[ele] = newVals[ele];
     }

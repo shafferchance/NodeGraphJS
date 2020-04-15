@@ -17,13 +17,15 @@ export default class RenderLayer extends ComponentE {
         this.width = window.innerWidth;
         this.height = window.innerHeight;
 
-        // dest.addEventListener("resize", () => {
-        //     let canvas = document.querySelector("canvas");
-        //     this.width = window.innerWidth;
-        //     this.height = window.innerHeight;
-        //     this.store.dispatch("changeRenderLayerDimm", canvas.getBoundingClientRect());
-        //     this.resizeRes();
-        // });
+        dest.addEventListener("resize", () => {
+            let canvas = document.querySelector("canvas");
+            this.width = window.innerWidth;
+            this.height = window.innerHeight;
+            this.store.dispatch("changeRenderLayerDimm", canvas.getBoundingClientRect());
+            this.resizeRes();
+        });
+
+        
     }
 
     resizeRes () {

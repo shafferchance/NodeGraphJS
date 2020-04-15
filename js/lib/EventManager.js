@@ -131,9 +131,9 @@ export default new EventManager({
         },
         mutateConnection(state, payload) {
             if (state.conns[payload.box] === undefined) {
-                state.conns[payload.box] = [];
+                state.conns[payload.box] = {input: [], output: []};
             }
-            state[payload.box].push(payload.connObj);
+            state.conns[payload.box][payload.type].push(payload.connObj);
             return state;
         }
     }
